@@ -63,8 +63,8 @@ public class Mem {
 #### 3. Working with arrays
 
 ```java
-@Library("ssl")
-public class LibSSL {
+@Library("crypto")
+public class LibCrypto {
 
     public static byte[] sha256(byte[] data) {
         byte[] digest = new byte[32];
@@ -77,7 +77,29 @@ public class LibSSL {
 }
 ```
 
-#### 4. Inlining raw machine code
+#### 4. Accessing object fields
+
+```java
+public class Time {
+    public long sec;
+    public long nsec;
+
+    public static Time current() {
+        Time time = new Time();
+        clock_gettime(0, time);
+        return time;
+    }
+
+    @Link
+    private static native void clock_gettime(int clk_id, @FieldOffset("sec") Time time);
+
+    static {
+        Linker.linkClass(Time.class);
+    }
+}
+```
+
+#### 5. Inlining raw machine code
 
 ```java
 public class Cpu {

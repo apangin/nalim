@@ -18,6 +18,7 @@
 
 package one.nalim;
 
+import java.lang.annotation.Annotation;
 import java.nio.ByteBuffer;
 
 class AMD64LinuxCallingConvention extends CallingConvention {
@@ -47,7 +48,7 @@ class AMD64LinuxCallingConvention extends CallingConvention {
             0x4989c1,  // mov  r9, rax
     };
 
-    private static final int[] MOVE_ARRAY_ARG = {
+    private static final int[] MOVE_OBJ_ARG = {
             0x488d7e,  // lea  rdi, [rsi+N]
             0x488d72,  // lea  rsi, [rdx+N]
             0x488d51,  // lea  rdx, [rcx+N]
@@ -57,15 +58,25 @@ class AMD64LinuxCallingConvention extends CallingConvention {
     };
 
     @Override
-    public void javaToNative(ByteBuffer buf, Class<?>... types) {
+    public void javaToNative(ByteBuffer buf, Class<?>[] types, Annotation[][] annotations) {
         if (types.length >= 6) {
             // 6th Java argument clashes with the 1st native arg
             emit(buf, SAVE_LAST_ARG);
         }
 
         int index = 0;
-        for (Class<?> type : types) {
-            index += moveArg(buf, index, type);
+        for (int i = 0; i < types.length; i++) {
+            Class<?> type = types[i];
+            if (type.isPrimitive()) {
+                if (index < 8 && type != float.class && type != double.class) {
+                    emit(buf, (type == long.class ? MOVE_LONG_ARG : MOVE_INT_ARG)[index++]);
+                }
+            } else if (index < 8) {
+                emit(buf, MOVE_OBJ_ARG[index++]);
+                buf.put(asByte(baseOffset(type, annotations[i])));
+            } else {
+                throw new IllegalArgumentException("Too many object arguments");
+            }
         }
     }
 
@@ -73,21 +84,5 @@ class AMD64LinuxCallingConvention extends CallingConvention {
     public void emitCall(ByteBuffer buf, long address) {
         buf.putShort((short) 0xb848).putLong(address);  // mov rax, address
         buf.putShort((short) 0xe0ff);                   // jmp rax
-    }
-
-    private static int moveArg(ByteBuffer buf, int index, Class<?> type) {
-        if (type == float.class || type == double.class) {
-            return 0;
-        } else if (index >= 6 && (type.isPrimitive() || type.isArray())) {
-            return 0;
-        } else if (type.isPrimitive()) {
-            emit(buf, (type == long.class ? MOVE_LONG_ARG : MOVE_INT_ARG)[index]);
-            return 1;
-        } else if (type.isArray()) {
-            emit(buf, MOVE_ARRAY_ARG[index]);
-            buf.put((byte) arrayBaseOffset(type));
-            return 1;
-        }
-        throw new IllegalArgumentException("Unsupported argument type: " + type);
     }
 }

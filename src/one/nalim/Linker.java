@@ -114,7 +114,7 @@ public class Linker {
 
         ByteBuffer buf = ByteBuffer.allocate(100).order(ByteOrder.nativeOrder());
         if (!naked) {
-            callingConvention.javaToNative(buf, m.getParameterTypes());
+            callingConvention.javaToNative(buf, m.getParameterTypes(), m.getParameterAnnotations());
         }
         callingConvention.emitCall(buf, address);
 

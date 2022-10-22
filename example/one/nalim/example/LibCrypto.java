@@ -3,8 +3,8 @@ package one.nalim.example;
 import one.nalim.Library;
 import one.nalim.Link;
 
-@Library("ssl")
-public class LibSSL {
+@Library("crypto")
+public class LibCrypto {
 
     public static byte[] sha256(byte[] data) {
         byte[] digest = new byte[32];
