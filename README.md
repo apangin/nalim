@@ -86,7 +86,7 @@ public class Cpu {
     // shl    $0x20,%rdx
     // or     %rdx,%rax
     // ret
-    @Code({15, 49, 72, -63, -30, 32, 72, 9, -48, -61})
+    @Code("0f31 48c1e220 4809d0 c3")
     public static native long rdtsc();
 
     static {

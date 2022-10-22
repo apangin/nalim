@@ -84,7 +84,7 @@ public class Linker {
 
         Code code = m.getAnnotation(Code.class);
         if (code != null) {
-            installCode(m, code.value());
+            installCode(m, parseHex(code.value()));
             return;
         }
 
@@ -126,6 +126,21 @@ public class Linker {
         if (!Modifier.isStatic(modifiers) || !Modifier.isNative(modifiers)) {
             throw new IllegalArgumentException("Method must be static native: " + m);
         }
+    }
+
+    private static byte[] parseHex(String hex) {
+        hex = hex.replaceAll("\\s+", "");
+
+        int length = hex.length();
+        if ((length & 1) != 0) {
+            throw new IllegalArgumentException("Invalid hex string");
+        }
+
+        byte[] code = new byte[length / 2];
+        for (int i = 0; i < code.length; i++) {
+            code[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+        }
+        return code;
     }
 
     public static void installCode(Method m, byte[] code) {

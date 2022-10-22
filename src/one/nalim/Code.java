@@ -30,8 +30,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Code {
     /**
-     * Machine code for the method implementation.
+     * Machine code for the method implementation
+     * encoded as a hex string, possibly with spaces.
      * Typically, the code should end with a return instruction.
      */
-    byte[] value();
+    String value();
 }
