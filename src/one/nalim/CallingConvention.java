@@ -38,6 +38,10 @@ abstract class CallingConvention {
             return new AArch64CallingConvention();
         }
 
+        if (arch.contains("riscv")) {
+            return new RISCV64CallingConvention();
+        }
+
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("windows")) {
             return new AMD64WindowsCallingConvention();
