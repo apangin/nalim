@@ -4,6 +4,8 @@ import one.nalim.Link;
 import one.nalim.Linker;
 import org.openjdk.jmh.annotations.*;
 
+import java.lang.foreign.*;
+import java.lang.invoke.MethodHandle;
 import java.util.concurrent.ThreadLocalRandom;
 
 @State(Scope.Benchmark)
@@ -23,13 +25,18 @@ public class JniBench {
     }
 
     @Benchmark
-    public long add_jni() {
+    public int add_jni() {
         return add(a, b);
     }
 
     @Benchmark
-    public long add_nalim() {
+    public int add_nalim() {
         return raw_add(a, b);
+    }
+
+    @Benchmark
+    public int add_panama() throws Throwable {
+        return (int) raw_add_mh.invoke(a, b);
     }
 
     @Benchmark
@@ -52,8 +59,14 @@ public class JniBench {
     @Link
     static native long raw_max(long[] array, int length);
 
+    private static final MethodHandle raw_add_mh;
+
     static {
         System.loadLibrary("jnibench");
         Linker.linkClass(JniBench.class);
+
+        raw_add_mh = java.lang.foreign.Linker.nativeLinker().downcallHandle(
+                SymbolLookup.loaderLookup().lookup("raw_add").orElseThrow(),
+                FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_INT));
     }
 }
