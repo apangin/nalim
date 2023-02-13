@@ -67,13 +67,13 @@ public class Linker {
     }
 
     public static void linkClass(Class<?> c) {
-        Library library = c.getAnnotation(Library.class);
+        Library library = AnnotationUtil.findLibrary(c, Os.CURRENT, Arch.CURRENT);
         if (library != null) {
             loadLibrary(library.value());
         }
 
         for (Method m : c.getDeclaredMethods()) {
-            if (m.getAnnotation(Link.class) != null || m.getAnnotation(Code.class) != null) {
+            if (isStaticNative(m)) {
                 linkMethod(m);
             }
         }
@@ -82,7 +82,7 @@ public class Linker {
     public static void linkMethod(Method m) {
         checkMethodType(m);
 
-        Code code = m.getAnnotation(Code.class);
+        Code code = AnnotationUtil.findCode(m, Os.CURRENT, Arch.CURRENT);
         if (code != null) {
             installCode(m, parseHex(code.value()));
             return;
@@ -99,7 +99,7 @@ public class Linker {
     public static void linkMethod(Method m, String symbol, boolean naked) {
         checkMethodType(m);
 
-        Library library = m.getAnnotation(Library.class);
+        Library library = AnnotationUtil.findLibrary(m, Os.CURRENT, Arch.CURRENT);
         if (library != null) {
             loadLibrary(library.value());
         }
@@ -122,10 +122,14 @@ public class Linker {
     }
 
     private static void checkMethodType(Method m) {
-        int modifiers = m.getModifiers();
-        if (!Modifier.isStatic(modifiers) || !Modifier.isNative(modifiers)) {
+        if (!isStaticNative(m)) {
             throw new IllegalArgumentException("Method must be static native: " + m);
         }
+    }
+
+    private static boolean isStaticNative(Method m) {
+        int modifiers = m.getModifiers();
+        return Modifier.isStatic(modifiers) && Modifier.isNative(modifiers);
     }
 
     private static byte[] parseHex(String hex) {
