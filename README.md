@@ -204,3 +204,6 @@ JNI function.
    can be passed as arguments.
 4. A function must return as soon as possible, since it blocks JVM from reaching 
    a safepoint.
+
+Due to JVMCI limitation in HotSpot, nalim works only with Parallel, Serial and G1 GC,
+and also with ZGC since JDK 21.
