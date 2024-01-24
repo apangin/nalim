@@ -15,9 +15,9 @@ Java_bench_JniBench_max(JNIEnv* env, jclass unused, jlongArray array, jint lengt
     jboolean isCopy;
     jlong* data = (jlong*) (*env)->GetPrimitiveArrayCritical(env, array, &isCopy);
 
-    jlong max = 1LL << 63;
+    jlong max = data[0];
     jint i;
-    for (i = 0; i < length; i++) {
+    for (i = 1; i < length; i++) {
         if (data[i] > max) max = data[i];
     }
     
@@ -27,9 +27,9 @@ Java_bench_JniBench_max(JNIEnv* env, jclass unused, jlongArray array, jint lengt
 
 JNIEXPORT jlong JNICALL
 raw_max(jlong* data, jint length) {
-    jlong max = 1LL << 63;
+    jlong max = data[0];
     jint i;
-    for (i = 0; i < length; i++) {
+    for (i = 1; i < length; i++) {
         if (data[i] > max) max = data[i];
     }
     return max;
