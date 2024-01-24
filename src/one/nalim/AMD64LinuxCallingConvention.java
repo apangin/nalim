@@ -68,10 +68,10 @@ class AMD64LinuxCallingConvention extends CallingConvention {
         for (int i = 0; i < types.length; i++) {
             Class<?> type = types[i];
             if (type.isPrimitive()) {
-                if (index < 8 && type != float.class && type != double.class) {
+                if (index < 6 && type != float.class && type != double.class) {
                     emit(buf, (type == long.class ? MOVE_LONG_ARG : MOVE_INT_ARG)[index++]);
                 }
-            } else if (index < 8) {
+            } else if (index < 6) {
                 emit(buf, MOVE_OBJ_ARG[index++]);
                 buf.put(asByte(baseOffset(type, annotations[i])));
             } else {
