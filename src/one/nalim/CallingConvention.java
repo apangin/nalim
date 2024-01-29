@@ -25,28 +25,24 @@ import jdk.vm.ci.runtime.JVMCI;
 
 import java.lang.annotation.Annotation;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 abstract class CallingConvention {
 
     static CallingConvention getInstance() {
-        String arch = System.getProperty("os.arch").toLowerCase();
-        if (!arch.contains("64")) {
-            throw new IllegalStateException("Unsupported architecture: " + arch);
-        }
-
-        if (arch.contains("aarch") || arch.contains("arm")) {
-            return new AArch64CallingConvention();
-        }
-
-        if (arch.contains("riscv")) {
-            return new RISCV64CallingConvention();
-        }
-
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("windows")) {
-            return new AMD64WindowsCallingConvention();
-        } else {
-            return new AMD64LinuxCallingConvention();
+        switch (Arch.CURRENT) {
+            case AMD64:
+                if (Objects.requireNonNull(Os.CURRENT) == Os.WINDOWS) {
+                    return new AMD64WindowsCallingConvention();
+                }
+                return new AMD64LinuxCallingConvention();
+            case AARCH64:
+                return new AArch64CallingConvention();
+            case RISCV64:
+                return new RISCV64CallingConvention();
+            default:
+                throw new IllegalStateException(
+                        "Unsupported architecture: " + System.getProperty("os.arch"));
         }
     }
 
