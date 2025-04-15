@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+}
+
+group = "one.nalim"
+
+compileJava {
+    options.compilerArgs
+            << '--add-modules' << 'jdk.internal.vm.ci'
+            << '--add-exports' << 'jdk.internal.vm.ci/jdk.vm.ci.code=ALL-UNNAMED'
+            << '--add-exports' << 'jdk.internal.vm.ci/jdk.vm.ci.code.site=ALL-UNNAMED'
+            << '--add-exports' << 'jdk.internal.vm.ci/jdk.vm.ci.hotspot=ALL-UNNAMED'
+            << '--add-exports' << 'jdk.internal.vm.ci/jdk.vm.ci.meta=ALL-UNNAMED'
+            << '--add-exports' << 'jdk.internal.vm.ci/jdk.vm.ci.runtime=ALL-UNNAMED'
+}
+
+repositories {
+}
+
+
+dependencies {
+}
+
+jar {
+    manifest {
+        attributes(
+                'Premain-Class': 'one.nalim.Agent'
+        )
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src"]
+        }
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
